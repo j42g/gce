@@ -1,11 +1,14 @@
 use std::borrow::BorrowMut;
 use std::str::Split;
-use crate::gce::board::types::{Color, File, Piece, Rank};
+use crate::gce::board::types::{CastlingRights, Color, File, Piece, Rank, Square};
 use crate::gce::board::types::Piece::*;
 
 pub(crate) struct NormalBoard {
 
-    board: [Piece; 64]
+    board: [Piece; 64],
+    has_turn: Color,
+    castling_rights: CastlingRights,
+    en_passant: Square
     
 
 }
@@ -13,30 +16,17 @@ pub(crate) struct NormalBoard {
 impl NormalBoard {
 
     pub fn new() -> NormalBoard {
-        let board = [WRook, WKnight, WBishop, WQueen, WKing, WBishop, WKnight, WRook,
-            WPawn, WPawn, WPawn, WPawn, WPawn, WPawn, WPawn, WPawn,
-            NoPiece, NoPiece, NoPiece, NoPiece, NoPiece, NoPiece, NoPiece, NoPiece,
-            NoPiece, NoPiece, NoPiece, NoPiece, NoPiece, NoPiece, NoPiece, NoPiece,
-            NoPiece, NoPiece, NoPiece, NoPiece, NoPiece, NoPiece, NoPiece, NoPiece,
-            NoPiece, NoPiece, NoPiece, NoPiece, NoPiece, NoPiece, NoPiece, NoPiece,
-            BPawn, BPawn, BPawn, BPawn, BPawn, BPawn, BPawn, BPawn,
-            BRook, BKnight, BBishop, BQueen, BKing, BBishop, BKnight, BRook
-        ];
-        return NormalBoard {
-            board
-        }
+        NormalBoard::from_fen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
     }
 
     pub fn from_fen(fen: &str) -> NormalBoard {
+        let split_fen: Vec<&str> = fen.split(" ").collect();
+
         let mut board: [Piece; 64] = [NoPiece; 64];
-
-
-        let fen: Vec<&str> = fen.split("/").collect();
+        let board_fen: Vec<&str> = split_fen.get(0).unwrap().split("/").collect();
         let mut sub_fen;
-
-
         let mut file: usize;
-        for (rank, i) in fen.iter().enumerate() {
+        for (rank, i) in board_fen.iter().enumerate() {
             sub_fen = i.split("");
             file = 0;
             for sub_str in sub_fen {
@@ -48,28 +38,33 @@ impl NormalBoard {
             }
         }
 
-        /*let mut sub_iter;
-        for (rank, str) in fen.split("/").enumerate() {
-            sub_iter = str.split("").enumerate().skip(0);
-            for (file, sub_str) in sub_iter {
-                if "rnbqkpRNBQKP".contains(sub_str){
-                    board[file + (8 - rank) * 8] = Piece::from_str(sub_str);
-                } else if "12345678".contains(sub_str) {
-                    sub_iter = sub_iter.advance_by(1).unwrap();
+        let has_turn = match split_fen.get(1).unwrap() {
+            &"w" => Color::White,
+            &"b" => Color::Black,
+            _ => panic!("Fehler im FEN!")
+        };
+        let mut castling_rights: CastlingRights = CastlingRights::NoCastling;
+        if split_fen.get(2).unwrap() != &"-" {
+            for right in split_fen.get(2).unwrap().split("").collect() {
+                match right {
+                    &"K" => castling_rights |= CastlingRights::WhiteOO,
+                    &"Q" => castling_rights |= CastlingRights::WhiteOOO,
+                    &"k" => castling_rights |= CastlingRights::BlackOO,
+                    &"q" => castling_rights |= CastlingRights::BlackOOO,
+                    _ => panic!("Fehler im FEN!")
                 }
             }
-        }*/
-        let board = [WRook, WKnight, WBishop, WQueen, WKing, WBishop, WKnight, WRook,
-            WPawn, WPawn, WPawn, WPawn, WPawn, WPawn, WPawn, WPawn,
-            NoPiece, NoPiece, NoPiece, NoPiece, NoPiece, NoPiece, NoPiece, NoPiece,
-            NoPiece, NoPiece, NoPiece, NoPiece, NoPiece, NoPiece, NoPiece, NoPiece,
-            NoPiece, NoPiece, NoPiece, NoPiece, NoPiece, NoPiece, NoPiece, NoPiece,
-            NoPiece, NoPiece, NoPiece, NoPiece, NoPiece, NoPiece, NoPiece, NoPiece,
-            BPawn, BPawn, BPawn, BPawn, BPawn, BPawn, BPawn, BPawn,
-            BRook, BKnight, BBishop, BQueen, BKing, BBishop, BKnight, BRook
-        ];
-        return NormalBoard {
-            board
+        }
+        if split_fen.get(3).unwrap() == "-" {
+            let en_passant = Square::None;
+        } else {
+
+        }
+        NormalBoard {
+            board,
+            has_turn,
+            castling_rights,
+            en_passant,
         }
 
     }
@@ -96,9 +91,6 @@ impl NormalBoard {
         }
         s
     }
-
-
-
 
 }
 

@@ -12,6 +12,6 @@ mod gce {
 
 
 fn main() {
-    let a = NormalBoard::from_fen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR");
+    let a = NormalBoard::new();
     println!("{}", a.to_string())
 }
