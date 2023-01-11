@@ -13,7 +13,9 @@ pub enum Piece {
 }
 
 impl Piece {
-    pub fn from_str(s: &str) -> Piece {
+    pub fn from_str(c: char) -> Piece {
+        let temp = c.to_string();
+        let s = temp.as_str();
         match s {
             "p" => BPawn,
             "P" => WPawn,
@@ -27,7 +29,29 @@ impl Piece {
             "Q" => WQueen,
             "k" => BKing,
             "K" => WKing,
-            &_ => NoPiece
+            &_ => {
+                println!("Unknown piece: {}", s);
+                NoPiece
+            }
+        }
+    }
+
+    pub fn from_u8(piece: u8) -> Piece {
+        match piece {
+            0 => NoPiece,
+            1 => WPawn,
+            2 => WKnight,
+            3 => WBishop,
+            4 => WRook,
+            5 => WQueen,
+            6 => WKing,
+            9 => BPawn,
+            10 => BKnight,
+            11 => BBishop,
+            12 => BRook,
+            13 => BQueen,
+            14 => BKing,
+            _ => { println!("Invalid piece: {}", piece); NoPiece }
         }
     }
 
@@ -76,16 +100,8 @@ pub enum File {
     HFile
 }
 
-impl Add<i32> for File {
-    type Output = i32;
-
-    fn add(self, rhs: i32) -> Self::Output {
-        self as i32 + rhs
-    }
-}
-
 pub enum Rank {
-    Rank1 = 0,
+    Rank1,
     Rank2,
     Rank3,
     Rank4,
@@ -95,13 +111,6 @@ pub enum Rank {
     Rank8
 }
 
-impl Mul<i32> for Rank {
-    type Output = i32;
-
-    fn mul(self, rhs: i32) -> Self::Output {
-        self as i32 * rhs
-    }
-}
 pub enum Square {
     A1, B1, C1, D1, E1, F1, G1, H1,
     A2, B2, C2, D2, E2, F2, G2, H2,
@@ -119,7 +128,7 @@ pub enum CastlingRights {
     NoCastling = 0,
     WhiteOO    = 0b0001,
     WhiteOOO   = 0b0010,
-    Black00    = 0b0100,
+    BlackOO    = 0b0100,
     BlackOOO   = 0b1000,
     KingSide   = 0b0101,
     QueenSide  = 0b1010,
