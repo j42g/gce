@@ -87,7 +87,7 @@ pub enum PieceType {
 }
 
 impl PieceType {
-    pub fn from_string(piece: String) -> u8 {
+    pub fn from_string(piece: String) -> u16 {
         match piece.to_lowercase().as_str() {
             "p" => 1,
             "n" => 2,
@@ -188,14 +188,14 @@ pub enum Move {
 
 impl Move {
     pub fn from_string(move_string: String) -> u16 {
-        let mut move_code: u32 = 0;
+        let mut move_code: u16 = 0;
         if move_string.len() == 5 {
-            let kekw = (PieceType::from_string(move_string.chars().nth(4).unwrap().to_string()) - 2) << 12;
+            move_code |= (PieceType::from_string(move_string.chars().nth(4).unwrap().to_string()) - 2) << 11;
         }
 
         let square = move_string;
 
-        0
+        move_code
     }
 }
 

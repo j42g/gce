@@ -1,5 +1,4 @@
 extern crate core;
-extern crate core;
 
 
 use crate::gce::board::types::{File, Piece, Rank};
