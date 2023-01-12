@@ -22,6 +22,10 @@ impl NormalBoard {
         NormalBoard::from_fen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
     }
 
+    pub fn do_move(r#move: u16) {
+
+    }
+
     pub fn from_fen(fen: &str) -> NormalBoard {
         let split_fen: Vec<&str> = fen.split(" ").collect();
         let mut board: [u8; 64] = [0; 64];

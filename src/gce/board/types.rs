@@ -1,5 +1,7 @@
-use std::ops::{Add, Mul};
+use crate::gce::board::types::File::*;
 use crate::gce::board::types::Piece::*;
+use crate::gce::board::types::PieceType::*;
+use crate::gce::board::types::Rank::*;
 
 #[derive(Debug, Copy, Clone)]
 pub enum Piece {
@@ -84,6 +86,21 @@ pub enum PieceType {
     King = 6
 }
 
+impl PieceType {
+    pub fn from_string(piece: String) -> u8 {
+        match piece.to_lowercase().as_str() {
+            "p" => 1,
+            "n" => 2,
+            "b" => 3,
+            "r" => 4,
+            "q" => 5,
+            "k" => 6,
+            _ => panic!("Unknown Piecetype: {}", piece)
+        }
+
+    }
+}
+
 pub enum Color {
     White = 0,
     Black = 1
@@ -100,6 +117,22 @@ pub enum File {
     HFile
 }
 
+impl File {
+    pub fn from_string(file: String) -> u8 {
+        match file.to_lowercase().as_str() {
+            "a" => 0,
+            "b" => 1,
+            "c" => 2,
+            "d" => 3,
+            "e" => 4,
+            "f" => 5,
+            "g" => 6,
+            "h" => 7,
+            _ => panic!("Invalid File: {}", file),
+        }
+    }
+}
+
 pub enum Rank {
     Rank1,
     Rank2,
@@ -109,6 +142,22 @@ pub enum Rank {
     Rank6,
     Rank7,
     Rank8
+}
+
+impl Rank {
+    pub fn from_string(rank: String) -> u8 {
+        match rank.to_lowercase().as_str() {
+            "1" => 0,
+            "2" => 1,
+            "3" => 2,
+            "4" => 3,
+            "5" => 4,
+            "6" => 5,
+            "7" => 6,
+            "8" => 7,
+            _ => panic!("Invalid Rank: {}", rank),
+        }
+    }
 }
 
 pub enum Square {
@@ -121,7 +170,40 @@ pub enum Square {
     A7, B7, C7, D7, E7, F7, G7, H7,
     A8, B8, C8, D8, E8, F8, G8, H8,
     None
+}
 
+impl Square {
+    pub fn from_string(sq: String) -> u8 { // sq soll sowas wie e3 sein, also "file""rank"
+        let file = File::from_string(sq.chars().nth(0).unwrap().to_string());
+        let rank = Rank::from_string(sq.chars().nth(1).unwrap().to_string());
+        file + rank * 8
+
+    }
+}
+
+pub enum Move {
+    MoveNone,
+    MoveNull = 65
+}
+
+impl Move {
+    pub fn from_string(move_string: String) -> u16 {
+        let mut move_code: u32 = 0;
+        if move_string.len() == 5 {
+            let kekw = (PieceType::from_string(move_string.chars().nth(4).unwrap().to_string()) - 2) << 12;
+        }
+
+        let square = move_string;
+
+        0
+    }
+}
+
+pub enum MoveType {
+    Normal,
+    Promotion = 1 << 14,
+    EnPassant = 2 << 14,
+    Castling  = 3 << 14
 }
 
 pub enum CastlingRights {
