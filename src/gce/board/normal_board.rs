@@ -65,11 +65,12 @@ impl NormalBoard {
                 }
             }
         }
-        let mut en_passant = Square::None as u8;
-        if *split_fen.get(3).unwrap() != "-" {
-            en_passant = Square::None as u8;
-            // TODO
-        }
+
+        let en_passant = if *split_fen.get(3).unwrap() == "-" {
+            Square::None as u8
+        } else {
+            Square::from_string(split_fen.get(3).unwrap().to_string())
+        };
         let fifty_move_rule = split_fen.get(4).unwrap().parse::<u8>().unwrap();
         let half_move_count = split_fen.get(5).unwrap().parse::<u16>().unwrap();
 
@@ -103,6 +104,10 @@ impl NormalBoard {
             index += 1;
         }
         pieces
+    }
+
+    pub fn get_ep_sq(&self) -> u8 {
+        self.en_passant
     }
 
     pub fn set_to_at_index(&mut self, file: usize, rank: usize, piece: Piece) {

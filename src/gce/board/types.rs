@@ -246,8 +246,8 @@ impl Move {
     pub fn to_string(move_code: u16) -> String {
         let mut move_string = Square::to_string(Move::from_sq_of(move_code));
         move_string += &Square::to_string(Move::to_sq_of(move_code));
-        if (move_code >> 13) & 3 == 1 {
-            move_string += &PieceType::to_string((move_code >> 11) + 2);
+        if (move_code >> 14) & 3 == 1 {
+            move_string += &PieceType::to_string(((move_code >> 12) & 3) + 2);
         }
         move_string
     }
