@@ -1,9 +1,6 @@
-use crate::gce::board::types::File::*;
 use crate::gce::board::types::Piece::*;
-use crate::gce::board::types::PieceType::*;
-use crate::gce::board::types::Rank::*;
 
-#[derive(Debug, Copy, Clone)]
+
 pub enum Piece {
     NoPiece = 0,
     WPawn = 1, BPawn = 9,
@@ -15,10 +12,16 @@ pub enum Piece {
 }
 
 impl Piece {
-    pub fn from_str(c: char) -> Piece {
-        let temp = c.to_string();
-        let s = temp.as_str();
-        match s {
+    pub fn type_of(piece: u8) -> u8 {
+        piece & 0b111
+    }
+    
+    pub fn color_of(piece: u8) -> u8 {
+        piece >> 3
+    }
+    
+    pub fn from_string(c: char) -> Piece {
+        match c.to_string().as_str() {
             "p" => BPawn,
             "P" => WPawn,
             "n" => BKnight,
@@ -31,10 +34,8 @@ impl Piece {
             "Q" => WQueen,
             "k" => BKing,
             "K" => WKing,
-            &_ => {
-                println!("Unknown piece: {}", s);
-                NoPiece
-            }
+            &_ => panic!("Unknown piece: {}", c)
+
         }
     }
 
@@ -97,7 +98,18 @@ impl PieceType {
             "k" => 6,
             _ => panic!("Unknown Piecetype: {}", piece)
         }
+    }
 
+    pub fn to_string(piece: u16) -> String {
+        match piece {
+            1 => "p",
+            2 => "n",
+            3 => "b",
+            4 => "r",
+            5 => "q",
+            6 => "k",
+            _ => panic!("Unknown Piecetype: {}", piece)
+        }.to_string()
     }
 }
 
@@ -131,6 +143,24 @@ impl File {
             _ => panic!("Invalid File: {}", file),
         }
     }
+
+    pub fn to_string(file: u8) -> String {
+        match file {
+            0 => "a",
+            1 => "b",
+            2 => "c",
+            3 => "d",
+            4 => "e",
+            5 => "f",
+            6 => "g",
+            7 => "h",
+            _ => panic!("Invalid File: {}", file),
+        }.to_string()
+    }
+
+    pub fn file_of(sq: u8) -> u8 {
+        sq & 7
+    }
 }
 
 pub enum Rank {
@@ -158,6 +188,19 @@ impl Rank {
             _ => panic!("Invalid Rank: {}", rank),
         }
     }
+
+    pub fn to_string(rank: u8) -> String {
+        if rank < 8 {
+            (rank + 1).to_string()
+        } else {
+            panic!("Invalid rank: {}", rank)
+        }
+
+    }
+
+    pub fn rank_of(sq: u8) -> u8 {
+        sq >> 3
+    }
 }
 
 pub enum Square {
@@ -177,7 +220,10 @@ impl Square {
         let file = File::from_string(sq.chars().nth(0).unwrap().to_string());
         let rank = Rank::from_string(sq.chars().nth(1).unwrap().to_string());
         file + rank * 8
+    }
 
+    pub fn to_string(sq: u8) -> String {
+        File::to_string(File::file_of(sq)) + &Rank::to_string(Rank::rank_of(sq))
     }
 }
 
@@ -191,11 +237,27 @@ impl Move {
         let mut move_code: u16 = 0;
         if move_string.len() == 5 {
             move_code |= (PieceType::from_string(move_string.chars().nth(4).unwrap().to_string()) - 2) << 11;
+            move_code |= MoveType::EnPassant as u16;
         }
+        move_code |= Square::from_string(move_string[2..4].to_string()) as u16; // to square
+        move_code | (Square::from_string(move_string[0..2].to_string()) as u16) << 5 // from square
+    }
 
-        let square = move_string;
+    pub fn to_string(move_code: u16) -> String {
+        let mut move_string = Square::to_string(Move::from_sq_of(move_code));
+        move_string += &Square::to_string(Move::to_sq_of(move_code));
+        if (move_code >> 13) & 3 == 1 {
+            move_string += &PieceType::to_string((move_code >> 11) + 2);
+        }
+        move_string
+    }
 
-        move_code
+    pub fn from_sq_of(move_code: u16) -> u8 {
+        ((move_code >> 6) & 0x3F) as u8
+    }
+
+    pub fn to_sq_of(move_code: u16) -> u8 {
+        (move_code & 0x3F) as u8
     }
 }
 
@@ -204,6 +266,27 @@ pub enum MoveType {
     Promotion = 1 << 14,
     EnPassant = 2 << 14,
     Castling  = 3 << 14
+}
+
+pub enum Direction {
+    North = 8,
+    East = 1,
+    South = -8,
+    West = -1,
+    NorthEast = 9,
+    SouthEast = -7,
+    SouthWest = -9,
+    NorthWest = 7,
+    // Knight
+    NorthNorthEast = 17,
+    EastNorthEast = 10,
+    EastSouthEast = -6,
+    SouthSouthEast = -15,
+    SouthSouthWest = -17,
+    WestSouthWest = -10,
+    WestNorthWest = 6,
+    NorthNorthWest = 15,
+
 }
 
 pub enum CastlingRights {
