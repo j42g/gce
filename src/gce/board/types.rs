@@ -1,4 +1,3 @@
-use std::ops::Not;
 use crate::gce::board::types::CastlingRights::{BlackCastling, WhiteCastling};
 use crate::gce::board::types::Piece::*;
 

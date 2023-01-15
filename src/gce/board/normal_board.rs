@@ -1,9 +1,4 @@
-use std::borrow::BorrowMut;
-use std::ops::Add;
-use std::str::Split;
-use crate::gce::board::types;
 use crate::gce::board::types::{CastlingRights, Color, File, Piece, PieceType, Rank, Square};
-use crate::gce::board::types::Piece::*;
 
 pub(crate) struct NormalBoard {
 
@@ -89,14 +84,18 @@ impl NormalBoard {
         // TODO
     }
 
-    pub fn is_attacked(sq: u8) -> bool {
+    fn compute_attacked_sqs() {
+
+    }
+
+    pub fn is_attacked(&self, sq: u8) -> bool {
         // TODO
 
 
         false
     }
 
-    pub fn can_castle(&self, cr: u8) -> bool {
+    pub fn has_castle_right(&self, cr: u8) -> bool {
         cr & self.castling_rights != 0
     }
 

@@ -69,13 +69,15 @@ pub(crate) fn generate_king_moves(board: &NormalBoard, side_to_move: u8, move_li
         }
     } // normal king moves
     // castling
-    if board.can_castle(CastlingRights::cr_rights(side_to_move, CastlingRights::AnyCastling as u8)) {
-        if board.can_castle(CastlingRights::cr_rights(side_to_move, CastlingRights::KingSide as u8)) { // Kingside
+    if board.has_castle_right(CastlingRights::cr_rights(side_to_move, CastlingRights::AnyCastling as u8)) {
+        if board.has_castle_right(CastlingRights::cr_rights(side_to_move, CastlingRights::KingSide as u8)) { // Kingside
             for sq in kingpath_kingside {
-                if
+                if board.is_attacked(sq) {
+
+                }
             }
         }
-        if board.can_castle(CastlingRights::cr_rights(side_to_move, CastlingRights::QueenSide as u8)) { // Queenside
+        if board.has_castle_right(CastlingRights::cr_rights(side_to_move, CastlingRights::QueenSide as u8)) { // Queenside
             // 4, 3, 2
             // 60, 59, 58
         }
@@ -152,11 +154,12 @@ fn add_en_passent(pawn_orig: u8, pawn_dest: u8, move_list: &mut [u16; 256], inde
     *index += 1;
 }
 
+const KNIGHT_MOVES: [&[u16]; 64] = [&[17, 10], &[18, 11, 16], &[19, 12, 8, 17], &[20, 13, 9, 18], &[21, 14, 10, 19], &[22, 15, 11, 20], &[23, 12, 21], &[13, 22], &[25, 18, 2], &[26, 19, 3, 24], &[27, 20, 4, 0, 16, 25], &[28, 21, 5, 1, 17, 26], &[29, 22, 6, 2, 18, 27], &[30, 23, 7, 3, 19, 28], &[31, 4, 20, 29], &[5, 21, 30], &[33, 26, 10, 1], &[34, 27, 11, 2, 0, 32], &[35, 28, 12, 3, 1, 8, 24, 33], &[36, 29, 13, 4, 2, 9, 25, 34], &[37, 30, 14, 5, 3, 10, 26, 35], &[38, 31, 15, 6, 4, 11, 27, 36], &[39, 7, 5, 12, 28, 37], &[6, 13, 29, 38], &[41, 34, 18, 9], &[42, 35, 19, 10, 8, 40], &[43, 36, 20, 11, 9, 16, 32, 41], &[44, 37, 21, 12, 10, 17, 33, 42], &[45, 38, 22, 13, 11, 18, 34, 43], &[46, 39, 23, 14, 12, 19, 35, 44], &[47, 15, 13, 20, 36, 45], &[14, 21, 37, 46], &[49, 42, 26, 17], &[50, 43, 27, 18, 16, 48], &[51, 44, 28, 19, 17, 24, 40, 49], &[52, 45, 29, 20, 18, 25, 41, 50], &[53, 46, 30, 21, 19, 26, 42, 51], &[54, 47, 31, 22, 20, 27, 43, 52], &[55, 23, 21, 28, 44, 53], &[22, 29, 45, 54], &[57, 50, 34, 25], &[58, 51, 35, 26, 24, 56], &[59, 52, 36, 27, 25, 32, 48, 57], &[60, 53, 37, 28, 26, 33, 49, 58], &[61, 54, 38, 29, 27, 34, 50, 59], &[62, 55, 39, 30, 28, 35, 51, 60], &[63, 31, 29, 36, 52, 61], &[30, 37, 53, 62], &[58, 42, 33], &[59, 43, 34, 32], &[60, 44, 35, 33, 40, 56], &[61, 45, 36, 34, 41, 57], &[62, 46, 37, 35, 42, 58], &[63, 47, 38, 36, 43, 59], &[39, 37, 44, 60], &[38, 45, 61], &[50, 41], &[51, 42, 40], &[52, 43, 41, 48], &[53, 44, 42, 49], &[54, 45, 43, 50], &[55, 46, 44, 51], &[47, 45, 52], &[46, 53]];
+
 pub(crate) fn generate_knight_moves(board: &NormalBoard, side_to_move: u8, move_list: &mut [u16; 256], index: &mut usize) {
-    let knight_moves: [Vec<u16>; 64] = [vec![17, 10], vec![18, 11, 16], vec![19, 12, 8, 17], vec![20, 13, 9, 18], vec![21, 14, 10, 19], vec![22, 15, 11, 20], vec![23, 12, 21], vec![13, 22], vec![25, 18, 2], vec![26, 19, 3, 24], vec![27, 20, 4, 0, 16, 25], vec![28, 21, 5, 1, 17, 26], vec![29, 22, 6, 2, 18, 27], vec![30, 23, 7, 3, 19, 28], vec![31, 4, 20, 29], vec![5, 21, 30], vec![33, 26, 10, 1], vec![34, 27, 11, 2, 0, 32], vec![35, 28, 12, 3, 1, 8, 24, 33], vec![36, 29, 13, 4, 2, 9, 25, 34], vec![37, 30, 14, 5, 3, 10, 26, 35], vec![38, 31, 15, 6, 4, 11, 27, 36], vec![39, 7, 5, 12, 28, 37], vec![6, 13, 29, 38], vec![41, 34, 18, 9], vec![42, 35, 19, 10, 8, 40], vec![43, 36, 20, 11, 9, 16, 32, 41], vec![44, 37, 21, 12, 10, 17, 33, 42], vec![45, 38, 22, 13, 11, 18, 34, 43], vec![46, 39, 23, 14, 12, 19, 35, 44], vec![47, 15, 13, 20, 36, 45], vec![14, 21, 37, 46], vec![49, 42, 26, 17], vec![50, 43, 27, 18, 16, 48], vec![51, 44, 28, 19, 17, 24, 40, 49], vec![52, 45, 29, 20, 18, 25, 41, 50], vec![53, 46, 30, 21, 19, 26, 42, 51], vec![54, 47, 31, 22, 20, 27, 43, 52], vec![55, 23, 21, 28, 44, 53], vec![22, 29, 45, 54], vec![57, 50, 34, 25], vec![58, 51, 35, 26, 24, 56], vec![59, 52, 36, 27, 25, 32, 48, 57], vec![60, 53, 37, 28, 26, 33, 49, 58], vec![61, 54, 38, 29, 27, 34, 50, 59], vec![62, 55, 39, 30, 28, 35, 51, 60], vec![63, 31, 29, 36, 52, 61], vec![30, 37, 53, 62], vec![58, 42, 33], vec![59, 43, 34, 32], vec![60, 44, 35, 33, 40, 56], vec![61, 45, 36, 34, 41, 57], vec![62, 46, 37, 35, 42, 58], vec![63, 47, 38, 36, 43, 59], vec![39, 37, 44, 60], vec![38, 45, 61], vec![50, 41], vec![51, 42, 40], vec![52, 43, 41, 48], vec![53, 44, 42, 49], vec![54, 45, 43, 50], vec![55, 46, 44, 51], vec![47, 45, 52], vec![46, 53]];
     let knight_pos = board.get_sq_of((PieceType::Knight as u8) | side_to_move << 3);
     for knight_orig in knight_pos {
-        for knight_dest in &knight_moves[knight_orig as usize] {
+        for knight_dest in KNIGHT_MOVES[knight_orig as usize] {
             if move_dest_empty_or_capture(board, side_to_move, *knight_dest) {
                 move_list[*index] = ((knight_orig as u16) << 6) | knight_dest;
                 *index += 1;
@@ -263,10 +266,12 @@ pub(crate) fn generate_queen_moves(board: &NormalBoard, side_to_move: u8, move_l
 }
 
 pub(crate) fn generate_all_moves(board: &NormalBoard, side_to_move: u8, move_list: &mut [u16; 256], index: &mut usize) {
+    generate_pawn_moves(board, side_to_move, move_list, index);
     generate_knight_moves(board, side_to_move, move_list, index);
-    generate_rook_moves(board, side_to_move, move_list, index);
     generate_bishop_moves(board, side_to_move, move_list, index);
+    generate_rook_moves(board, side_to_move, move_list, index);
     generate_queen_moves(board, side_to_move, move_list, index);
+    generate_king_moves(board, side_to_move, move_list, index);
 }
 
 fn move_dest_empty_or_capture(board: &NormalBoard, side_to_move: u8, piece_dest: u16) -> bool {
