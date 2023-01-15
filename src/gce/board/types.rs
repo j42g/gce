@@ -1,3 +1,5 @@
+use std::ops::Not;
+use crate::gce::board::types::CastlingRights::{BlackCastling, WhiteCastling};
 use crate::gce::board::types::Piece::*;
 
 
@@ -297,7 +299,13 @@ pub enum CastlingRights {
     BlackOOO   = 0b1000,
     KingSide   = 0b0101,
     QueenSide  = 0b1010,
-    WhiteSide  = 0b0011,
-    BlackSide  = 0b1100,
+    WhiteCastling = 0b0011,
+    BlackCastling = 0b1100,
     AnyCastling= 0b1111
+}
+
+impl CastlingRights {
+    pub fn cr_rights(side_to_move: u8, castling_rights: u8) -> u8 {
+        (if side_to_move == 0 { WhiteCastling as u8} else { BlackCastling as u8 }) & castling_rights
+    }
 }

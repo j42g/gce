@@ -23,10 +23,6 @@ impl NormalBoard {
         NormalBoard::from_fen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
     }
 
-    pub fn do_move(move_code: u16) {
-
-    }
-
     pub fn from_fen(fen: &str) -> NormalBoard {
         let split_fen: Vec<&str> = fen.split(" ").collect();
         let mut board: [u8; 64] = [0; 64];
@@ -83,6 +79,25 @@ impl NormalBoard {
             half_move_count
         }
 
+    }
+
+    pub fn do_move(move_code: u16) {
+        // TODO
+    }
+
+    pub fn undo_move() {
+        // TODO
+    }
+
+    pub fn is_attacked(sq: u8) -> bool {
+        // TODO
+
+
+        false
+    }
+
+    pub fn can_castle(&self, cr: u8) -> bool {
+        cr & self.castling_rights != 0
     }
 
     pub fn side_to_move(&self) -> u8 {

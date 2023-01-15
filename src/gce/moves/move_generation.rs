@@ -1,5 +1,5 @@
 use crate::gce::board::normal_board::NormalBoard;
-use crate::gce::board::types::{Direction::*, Direction, MoveType, Piece, PieceType};
+use crate::gce::board::types::{CastlingRights, Direction::*, Direction, MoveType, Piece, PieceType};
 
 pub(crate) fn generate_king_moves(board: &NormalBoard, side_to_move: u8, move_list: &mut [u16; 256], index: &mut usize) {
     let kingpos = *board.get_sq_of((PieceType::King as u8) | side_to_move << 3).first().unwrap() as i16;
@@ -7,63 +7,80 @@ pub(crate) fn generate_king_moves(board: &NormalBoard, side_to_move: u8, move_li
     let east = kingpos & 0x7 != 7;
     let south = kingpos > 8;
     let west = kingpos & 0x7 != 0;
+    let kingpath_kingside: [u8; 3] = if side_to_move == 0 {[4, 5, 6]} else {[60, 61, 62]};
+    let kingpath_queenside: [u8; 3] = if side_to_move == 0 {[4, 3, 2]} else {[60, 59, 58]};
     let mut king_dest;
-    if north {
-        king_dest = (kingpos + North as i16) as u16;
-        if move_dest_empty_or_capture(board, side_to_move, king_dest) {
-            move_list[*index] = (((kingpos as u16) << 6) | king_dest) as u16;
-            *index += 1;
+    {
+        if north {
+            king_dest = (kingpos + North as i16) as u16;
+            if move_dest_empty_or_capture(board, side_to_move, king_dest) {
+                move_list[*index] = (((kingpos as u16) << 6) | king_dest) as u16;
+                *index += 1;
+            }
+        }
+        if north && east {
+            king_dest = (kingpos + NorthEast as i16) as u16;
+            if move_dest_empty_or_capture(board, side_to_move, king_dest) {
+                move_list[*index] = (((kingpos as u16) << 6) | king_dest) as u16;
+                *index += 1;
+            }
+        }
+        if east {
+            king_dest = (kingpos + East as i16) as u16;
+            if move_dest_empty_or_capture(board, side_to_move, king_dest) {
+                move_list[*index] = (((kingpos as u16) << 6) | king_dest) as u16;
+                *index += 1;
+            }
+        }
+        if south && east {
+            king_dest = (kingpos + SouthEast as i16) as u16;
+            if move_dest_empty_or_capture(board, side_to_move, king_dest) {
+                move_list[*index] = (((kingpos as u16) << 6) | king_dest) as u16;
+                *index += 1;
+            }
+        }
+        if south {
+            king_dest = (kingpos + South as i16) as u16;
+            if move_dest_empty_or_capture(board, side_to_move, king_dest) {
+                move_list[*index] = (((kingpos as u16) << 6) | king_dest) as u16;
+                *index += 1;
+            }
+        }
+        if south && west {
+            king_dest = (kingpos + SouthWest as i16) as u16;
+            if move_dest_empty_or_capture(board, side_to_move, king_dest) {
+                move_list[*index] = (((kingpos as u16) << 6) | king_dest) as u16;
+                *index += 1;
+            }
+        }
+        if west {
+            king_dest = (kingpos + West as i16) as u16;
+            if move_dest_empty_or_capture(board, side_to_move, king_dest) {
+                move_list[*index] = (((kingpos as u16) << 6) | king_dest) as u16;
+                *index += 1;
+            }
+        }
+        if north && west {
+            king_dest = (kingpos + NorthWest as i16) as u16;
+            if move_dest_empty_or_capture(board, side_to_move, king_dest) {
+                move_list[*index] = (((kingpos as u16) << 6) | king_dest) as u16;
+                *index += 1;
+            }
+        }
+    } // normal king moves
+    // castling
+    if board.can_castle(CastlingRights::cr_rights(side_to_move, CastlingRights::AnyCastling as u8)) {
+        if board.can_castle(CastlingRights::cr_rights(side_to_move, CastlingRights::KingSide as u8)) { // Kingside
+            for sq in kingpath_kingside {
+                if
+            }
+        }
+        if board.can_castle(CastlingRights::cr_rights(side_to_move, CastlingRights::QueenSide as u8)) { // Queenside
+            // 4, 3, 2
+            // 60, 59, 58
         }
     }
-    if north && east {
-        king_dest = (kingpos + NorthEast as i16) as u16;
-        if move_dest_empty_or_capture(board, side_to_move, king_dest) {
-            move_list[*index] = (((kingpos as u16) << 6) | king_dest) as u16;
-            *index += 1;
-        }
-    }
-    if east {
-        king_dest = (kingpos + East as i16) as u16;
-        if move_dest_empty_or_capture(board, side_to_move, king_dest) {
-            move_list[*index] = (((kingpos as u16) << 6) | king_dest) as u16;
-            *index += 1;
-        }
-    }
-    if south && east {
-        king_dest = (kingpos + SouthEast as i16) as u16;
-        if move_dest_empty_or_capture(board, side_to_move, king_dest) {
-            move_list[*index] = (((kingpos as u16) << 6) | king_dest) as u16;
-            *index += 1;
-        }
-    }
-    if south {
-        king_dest = (kingpos + South as i16) as u16;
-        if move_dest_empty_or_capture(board, side_to_move, king_dest) {
-            move_list[*index] = (((kingpos as u16) << 6) | king_dest) as u16;
-            *index += 1;
-        }
-    }
-    if south && west {
-        king_dest = (kingpos + SouthWest as i16) as u16;
-        if move_dest_empty_or_capture(board, side_to_move, king_dest) {
-            move_list[*index] = (((kingpos as u16) << 6) | king_dest) as u16;
-            *index += 1;
-        }
-    }
-    if west {
-        king_dest = (kingpos + West as i16) as u16;
-        if move_dest_empty_or_capture(board, side_to_move, king_dest) {
-            move_list[*index] = (((kingpos as u16) << 6) | king_dest) as u16;
-            *index += 1;
-        }
-    }
-    if north && west {
-        king_dest = (kingpos + NorthWest as i16) as u16;
-        if move_dest_empty_or_capture(board, side_to_move, king_dest) {
-            move_list[*index] = (((kingpos as u16) << 6) | king_dest) as u16;
-            *index += 1;
-        }
-    }
+
 }
 
 pub(crate) fn generate_pawn_moves(board: &NormalBoard, side_to_move: u8, move_list: &mut [u16; 256], index: &mut usize) {
