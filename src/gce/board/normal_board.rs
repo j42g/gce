@@ -1,4 +1,5 @@
-use crate::gce::board::types::{CastlingRights, Color, File, Piece, PieceType, Rank, Square};
+use crate::gce::board::types::{CastlingRights, Color, File, Move, MoveType, Piece, PieceType, Rank, Square};
+use crate::gce::board::types::MoveType::Castling;
 
 pub(crate) struct NormalBoard {
 
@@ -41,7 +42,7 @@ impl NormalBoard {
             "w" => Color::White,
             "b" => Color::Black,
             _ => panic!("Fehler im FEN!")
-        };
+        } as u8;
         let mut castling_rights: u8 = CastlingRights::NoCastling as u8;
         if *split_fen.get(2).unwrap() != "-" {
             let rights: Vec<_> = split_fen.get(2).unwrap().split("").collect();
@@ -63,11 +64,11 @@ impl NormalBoard {
             Square::from_string(split_fen.get(3).unwrap().to_string())
         };
         let fifty_move_rule = split_fen.get(4).unwrap().parse::<u8>().unwrap();
-        let half_move_count = split_fen.get(5).unwrap().parse::<u16>().unwrap();
+        let half_move_count = 2 * (split_fen.get(5).unwrap().parse::<u16>().unwrap() - 1) + if has_turn == Color::Black as u8 { 1 } else { 0 };
 
         NormalBoard {
             board,
-            has_turn: has_turn as u8,
+            has_turn,
             castling_rights: castling_rights as u8,
             en_passant,
             fifty_move_rule,
@@ -76,8 +77,17 @@ impl NormalBoard {
 
     }
 
-    pub fn do_move(move_code: u16) {
-        // TODO
+    pub fn do_move(&mut self, move_code: u16) {
+        self.half_move_count += 1;
+        self.fifty_move_rule += 1;
+
+        if Move::type_of(move_code) == MoveType::Castling as u16 {
+            
+        }
+
+        if Move::type_of(move_code) == MoveType::EnPassant as u16 {
+
+        }
     }
 
     pub fn undo_move() {
@@ -86,13 +96,6 @@ impl NormalBoard {
 
     fn compute_attacked_sqs() {
 
-    }
-
-    pub fn is_attacked(&self, sq: u8) -> bool {
-        // TODO
-
-
-        false
     }
 
     pub fn has_castle_right(&self, cr: u8) -> bool {
@@ -149,6 +152,52 @@ impl NormalBoard {
             s += "\n";
         }
         s
+    }
+
+    pub fn to_fen(&self) -> String {
+        let mut fen = String::new();
+
+        // board
+        let mut empty_counter: u8;
+        for rank in (0..8 as usize).rev() {
+            empty_counter = 0;
+            for file in 0..8 as usize {
+                if self.board[rank * 8 + file] == 0 {
+                    empty_counter += 1
+                } else {
+                    if empty_counter != 0 {
+                        fen += &empty_counter.to_string();
+                    }
+                    fen += Piece::from_u8(self.board[rank * 8 + file]).to_string();
+                    empty_counter = 0;
+                }
+            }
+            if empty_counter != 0 {
+                fen += &empty_counter.to_string();
+            }
+            if rank != 0 {
+                fen += "/";
+            }
+        }
+
+        // side to move
+        fen += if self.has_turn == 0 { " w " } else { " b " };
+        // castling rights
+        fen += &CastlingRights::to_fen(self.castling_rights);
+        // en passant
+        if self.en_passant == Square::None as u8 {
+            fen += " -"
+        } else {
+            fen += " ";
+            fen += &Square::to_string(self.en_passant);
+        };
+        // fifty move rule
+        fen += " ";
+        fen += &self.fifty_move_rule.to_string();
+        // move count
+        fen += " ";
+        fen += &(self.half_move_count / 2 + 1).to_string();
+        fen
     }
 
 }

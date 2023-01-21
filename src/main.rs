@@ -1,7 +1,7 @@
 extern crate core;
 
 
-use crate::gce::board::types::{Move};
+use crate::gce::board::types::{File, Move, Rank};
 use crate::gce::board::normal_board::NormalBoard;
 use crate::gce::moves::move_generation::{generate_all_moves, generate_bishop_moves, generate_king_moves, generate_pawn_moves, generate_queen_moves, generate_rook_moves};
 
@@ -26,6 +26,6 @@ fn main() { // rnbqkbnr/pppppppp/8/4b3/8/8/PPPPPPPP/RNBQKBNR b KQkq - 0 1
     for i in 0..index {
         println!("{}", Move::to_string(movelist[i]));
     }
-
+    println!("{}", a.to_fen());
 
 }

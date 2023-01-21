@@ -1,4 +1,3 @@
-use crate::gce::board::types::CastlingRights::{BlackCastling, WhiteCastling};
 use crate::gce::board::types::Piece::*;
 
 
@@ -253,6 +252,10 @@ impl Move {
         move_string
     }
 
+    pub fn make_move(from_sq: u8, to_sq: u8) -> u16 {
+        ((from_sq as u16) << 6) | (to_sq as u16)
+    }
+
     pub fn from_sq_of(move_code: u16) -> u8 {
         ((move_code >> 6) & 0x3F) as u8
     }
@@ -260,6 +263,11 @@ impl Move {
     pub fn to_sq_of(move_code: u16) -> u8 {
         (move_code & 0x3F) as u8
     }
+
+    pub fn type_of(move_code: u16) -> u16 {
+        move_code & (3 << 14)
+    }
+
 }
 
 pub enum MoveType {
@@ -305,6 +313,20 @@ pub enum CastlingRights {
 
 impl CastlingRights {
     pub fn cr_rights(side_to_move: u8, castling_rights: u8) -> u8 {
-        (if side_to_move == 0 { WhiteCastling as u8} else { BlackCastling as u8 }) & castling_rights
+        (if side_to_move == 0 { CastlingRights::WhiteCastling as u8} else { CastlingRights::BlackCastling as u8 }) & castling_rights
     }
+    
+    pub fn to_fen(cr: u8) -> String {
+        if cr == 0 {
+            return "-".to_string()
+        }
+        let mut fen = String::new();
+        fen += if CastlingRights::WhiteOO as u8 & cr != 0 { "K" } else { "" };
+        fen += if CastlingRights::WhiteOOO as u8 & cr != 0 { "Q" } else { "" };
+        fen += if CastlingRights::BlackOO as u8 & cr != 0 { "k" } else { "" };
+        fen += if CastlingRights::BlackOOO as u8 & cr != 0 { "q" } else { "" };
+        
+        fen
+    }
+    
 }
