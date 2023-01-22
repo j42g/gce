@@ -1,5 +1,4 @@
 use crate::gce::board::types::{CastlingRights, Color, File, Move, MoveType, Piece, PieceType, Rank, Square};
-use crate::gce::board::types::MoveType::Castling;
 
 pub(crate) struct NormalBoard {
 
